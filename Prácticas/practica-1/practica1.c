@@ -11,7 +11,7 @@
  *
  * Materia: Estructuras de Datos
  * Grupo: 1CMX
- * Profesor: Roberto Alcántara.
+ * Profesor: Alberto Alcántara.
  * ESCOM - IPN
  * 11/Oct/2020.
  */
@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 
   // Mensajes de inicio.
   printf("Escuela Superior de Cómputo - IPN\n");
-  printf("Estructuras de Datos - Roberto Alcántara\n");
+  printf("Estructuras de Datos - Alberto Alcántara\n");
   printf("Práctica 1: Realizar la impresión de una matriz de tamaño dinámico.\n");
   printf("Equipo:\n");
   printf("  - Téllez Castilla Laura Daniela (2020630527) <danycastilla27@gmail.com>\n");
