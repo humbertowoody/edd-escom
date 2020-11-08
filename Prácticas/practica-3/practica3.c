@@ -157,6 +157,12 @@ void convertirAPrefijoYResolver(char *expresion)
         {
           // Si es paréntesis izquierdo sacamos el último elemento de la pilaO y lo insertamos en la pilaEF.
           pushPilaDinamicaChar(&pilaEF, popPilaDinamicaChar(&pilaO));
+
+          // Si el siguiente elemento restante en la pilaO es un paréntesis derecho, lo sacamos.
+          if (esParentesisDerecho(verUltimoPilaDinamicaChar(&pilaO)))
+          {
+            popPilaDinamicaChar(&pilaO);
+          }
         }
         else if (esParentesisDerecho(*elementoActual))
         {
