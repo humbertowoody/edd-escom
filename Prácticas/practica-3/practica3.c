@@ -2,8 +2,8 @@
  * Practica3.c - Archivo base de la práctica
  *
  * Práctica: 3
- * Objetivo: Implementar un programa en C que, dada una cadena en infijo,
- * la convierta en sus correspondientes versiones en postfijo y prefijo y realice las evaluaciones en ambos formatos.
+ * Objetivo: Implementar un programa en C que, dada una cadena en infijo, la convierta en sus correspondientes versiones
+ *           en postfijo y prefijo y realice las evaluaciones en ambos formatos.
  *
  * Equipo:
  *   - Téllez Castilla Laura Daniela (2020630527) <danycastilla27@gmail.com>
@@ -64,6 +64,7 @@ int esOperador(char);                       // Regresa 1 si el valor es operador
 int esParentesisIzquierdo(char);            // Determina si un caracter es paréntesis izquierdo.
 int esParentesisDerecho(char);              // Determina si un caracter es paréntesis derecho.
 char *invertirCadena(char *);               // Invierte una cadena de caracteres.
+float caracterAFloat(char);                 // Convierte un caracter a su representación decimal.
 
 /**
  * Función principal del programa.
@@ -121,6 +122,8 @@ void convertirAPrefijoYResolver(char *expresion)
   // Primero invertimos la expresión.
   expresion = invertirCadena(expresion);
 
+  // printf("Expresión invertida: %s\n", expresion);
+
   // Asignamos el elemento actual al inicio de la expresión invertida.
   elementoActual = expresion;
 
@@ -128,7 +131,7 @@ void convertirAPrefijoYResolver(char *expresion)
   while (*elementoActual != '\0')
   {
     // Impresión para debugging.
-    // printf("Elemento actual: %c, precedencia: %i\nPilaEF: ", *elementoActual, precedenciaOperador(*elementoActual));
+    // printf("Elemento actual: %c\nPilaEF: ", *elementoActual);
     // imprimirPilaDinamicaChar(&pilaEF);
     // printf("\nPilaO: ");
     // imprimirPilaDinamicaChar(&pilaO);
@@ -140,13 +143,13 @@ void convertirAPrefijoYResolver(char *expresion)
       // Añadimos el operando a la pila con la expresión final.
       pushPilaDinamicaChar(&pilaEF, *elementoActual);
     }
-    else if (esOperador(*elementoActual) || esParentesisDerecho(*elementoActual) || esParentesisIzquierdo(*elementoActual))
+    else if (esOperador(*elementoActual))
     {
       // Determinamos la prioridad del operador.
       if (precedenciaOperador(*elementoActual) == precedenciaOperador(verUltimoPilaDinamicaChar(&pilaO)))
       {
         // Sacamos el último elemento de la pilaO y lo metemos en la pilaEF.
-        // pushPilaDinamicaChar(&pilaEF, popPilaDinamicaChar(&pilaO));
+        pushPilaDinamicaChar(&pilaEF, popPilaDinamicaChar(&pilaO));
 
         // Introducimos el operador en la pilaO.
         pushPilaDinamicaChar(&pilaO, *elementoActual);
@@ -155,19 +158,16 @@ void convertirAPrefijoYResolver(char *expresion)
       {
         if (esParentesisIzquierdo(*elementoActual))
         {
-          // Si es paréntesis izquierdo sacamos el último elemento de la pilaO y lo insertamos en la pilaEF.
-          pushPilaDinamicaChar(&pilaEF, popPilaDinamicaChar(&pilaO));
-
-          // Si el siguiente elemento restante en la pilaO es un paréntesis derecho, lo sacamos.
-          if (esParentesisDerecho(verUltimoPilaDinamicaChar(&pilaO)))
-          {
-            popPilaDinamicaChar(&pilaO);
-          }
+          // Si es paréntesis izquierdo, ingresamos el operador actual en la pilaO.
+          pushPilaDinamicaChar(&pilaO, *elementoActual);
         }
         else if (esParentesisDerecho(*elementoActual))
         {
-          // Si es paréntesis derecho lo insertamos en la pilaO.
-          pushPilaDinamicaChar(&pilaO, *elementoActual);
+          // Si es paréntesis derecho, volcamos pilaO en pilaEF hasta '('
+          volcarPilaDinamicaChar(&pilaO, &pilaEF, '(');
+
+          // Sacamos el paréntesis izquierdo sobrante en la pilaO.
+          popPilaDinamicaChar(&pilaO);
         }
         else
         {
@@ -177,44 +177,45 @@ void convertirAPrefijoYResolver(char *expresion)
       }
       else if (precedenciaOperador(*elementoActual) < precedenciaOperador(verUltimoPilaDinamicaChar(&pilaO)) || verUltimoPilaDinamicaChar(&pilaO) != '\0')
       {
-        // Si no es paréntesis derecho ni es el último elemento de la pila.
-        if (!esParentesisDerecho(verUltimoPilaDinamicaChar(&pilaO)) && verUltimoPilaDinamicaChar(&pilaO) != '\0')
+        // Verificamos si el operador es un paréntesis izquierdo y si la pila no está vacía.
+        if (!esParentesisIzquierdo(verUltimoPilaDinamicaChar(&pilaO)) && verUltimoPilaDinamicaChar(&pilaO) != '\0')
         {
-          pushPilaDinamicaChar(&pilaEF, popPilaDinamicaChar(&pilaO));
+          // Volcamos la pilaO en pilaEF totalmente.
+          volcarPilaDinamicaChar(&pilaO, &pilaEF, '\0');
         }
 
         // Añadimos el elemento en la pilaO.
         pushPilaDinamicaChar(&pilaO, *elementoActual);
       }
     }
-    else
-    {
-      // Volcamos la pilaO en pilaEF hasta '\0'
-      volcarPilaDinamicaChar(&pilaO, &pilaEF, '\0');
-    }
 
     // Aumentamos el apuntador en 1.
     elementoActual++;
   }
+
   // Volcamos los operadores restantes en la pilaEF.
   volcarPilaDinamicaChar(&pilaO, &pilaEF, '\0');
 
-  // Volcamos la pilaEF en pilaO para invertir el orden.
-  volcarPilaDinamicaChar(&pilaEF, &pilaO, '\0');
-
   // Imprimimos las conclusiones de la operación.
   printf("La cadena en prefijo es: ");
-  imprimirPilaDinamicaChar(&pilaO);
+  imprimirPilaDinamicaChar(&pilaEF);
   printf("\n");
+
+  // Invertimos la cadena para evaluarla.
+  volcarPilaDinamicaChar(&pilaEF, &pilaO, '\0');
 
   // Realizamos la evaluación.
   while (verUltimoPilaDinamicaChar(&pilaO) != '\0')
   {
+    // printf("Evaluando: %c\n", verUltimoPilaDinamicaChar(&pilaO));
+
     // Verificamos si el elemento es un operando.
     if (esOperando(verUltimoPilaDinamicaChar(&pilaO)))
     {
+      // printf("Insertamos %c en pila de números.\n", verUltimoPilaDinamicaChar(&pilaO));
+
       // Insertamos en la pila de evaluación el número.
-      pushPilaDinamicaNum(&pilaEvaluacion, (float)(popPilaDinamicaChar(&pilaO) - '0'));
+      pushPilaDinamicaNum(&pilaEvaluacion, caracterAFloat(popPilaDinamicaChar(&pilaO)));
     }
     else
     {
@@ -222,6 +223,8 @@ void convertirAPrefijoYResolver(char *expresion)
       float izq = popPilaDinamicaNum(&pilaEvaluacion);
       char operador = popPilaDinamicaChar(&pilaO);
       float der = popPilaDinamicaNum(&pilaEvaluacion);
+
+      // printf("Se realiza operación: %.2f %c %.2f = %.2f\n", izq, operador, der, evaluarExpresion(izq, operador, der));
 
       // Guardamos el resultado en la pila de evaluación.
       pushPilaDinamicaNum(&pilaEvaluacion, evaluarExpresion(izq, operador, der));
@@ -286,6 +289,9 @@ void convertirAPostfijoYResolver(char *expresion)
         {
           // Si es paréntesis derecho, volcamos pilaO en pilaEF hasta '('
           volcarPilaDinamicaChar(&pilaO, &pilaEF, '(');
+
+          // Sacamos el paréntesis izquierdo sobrante en la pilaO.
+          popPilaDinamicaChar(&pilaO);
         }
         else
         {
@@ -306,11 +312,6 @@ void convertirAPostfijoYResolver(char *expresion)
         pushPilaDinamicaChar(&pilaO, *elementoActual);
       }
     }
-    else
-    {
-      // Volcamos la pilaO en pilaEF hasta '\0'
-      volcarPilaDinamicaChar(&pilaO, &pilaEF, '\0');
-    }
 
     // Aumentamos el apuntador en 1.
     elementoActual++;
@@ -329,18 +330,24 @@ void convertirAPostfijoYResolver(char *expresion)
   // Realizamos la evaluación.
   while (verUltimoPilaDinamicaChar(&pilaO) != '\0')
   {
+    // printf("Evaluando: %c\n", verUltimoPilaDinamicaChar(&pilaO));
+
     // Verificamos si el elemento es un operando.
     if (esOperando(verUltimoPilaDinamicaChar(&pilaO)))
     {
+      // printf("Insertamos %c en pila de números.\n", verUltimoPilaDinamicaChar(&pilaO));
+
       // Insertamos en la pila de evaluación el número.
-      pushPilaDinamicaNum(&pilaEvaluacion, (float)(popPilaDinamicaChar(&pilaO) - '0'));
+      pushPilaDinamicaNum(&pilaEvaluacion, caracterAFloat(popPilaDinamicaChar(&pilaO)));
     }
     else
     {
       // Extraemos los elementos para la operación a realizar.
-      float izq = popPilaDinamicaNum(&pilaEvaluacion);
-      char operador = popPilaDinamicaChar(&pilaO);
       float der = popPilaDinamicaNum(&pilaEvaluacion);
+      char operador = popPilaDinamicaChar(&pilaO);
+      float izq = popPilaDinamicaNum(&pilaEvaluacion);
+
+      // printf("Se realiza operación: %.2f %c %.2f = %.2f\n", izq, operador, der, evaluarExpresion(izq, operador, der));
 
       // Guardamos el resultado en la pila de evaluación.
       pushPilaDinamicaNum(&pilaEvaluacion, evaluarExpresion(izq, operador, der));
@@ -577,7 +584,7 @@ int precedenciaOperador(char operador)
  */
 int esOperador(char caracter)
 {
-  if (caracter == '^' || caracter == '*' || caracter == '/' || caracter == '+' || caracter == '-')
+  if (caracter == '^' || caracter == '*' || caracter == '/' || caracter == '+' || caracter == '-' || esParentesisDerecho(caracter) || esParentesisIzquierdo(caracter))
   {
     // Es un operador.
     return 1;
@@ -707,9 +714,40 @@ char *invertirCadena(char *cadenaOriginal)
   int i;
   for (i = 0; i < longitudCadena; i++)
   {
+    // Asignamos el caracter en la posición opuesta.
     resultado[i] = cadenaOriginal[longitudCadena - 1 - i];
+
+    // Verificamos si hay que invertir paréntesis.
+    if (esParentesisDerecho(resultado[i]))
+    {
+      // Invertimos el paréntesis.
+      resultado[i] = '(';
+    }
+    else if (esParentesisIzquierdo(resultado[i]))
+    {
+      // Invertimos el paréntesis.
+      resultado[i] = ')';
+    }
   }
 
   // Regresamos la cadena invertida.
   return resultado;
+}
+
+/**
+ * Caracter a float
+ * Realiza la conversión de un caracter a su valor numérico correspondiente.
+ * @param caracter El caracter a convertir.
+ * @return El número de coma flotante correspondiente al caracter proporcionado.
+ */
+float caracterAFloat(char caracter)
+{
+  // Usamos un hack del código ASCII.
+  if (esOperando(caracter))
+  {
+    return caracter - '0';
+  }
+
+  // En caso de que no sea un operando (número o letra), regresamos 0.
+  return 0;
 }
