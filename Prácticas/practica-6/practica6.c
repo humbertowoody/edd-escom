@@ -1,8 +1,8 @@
 /**
  * practica6.c - Archivo base de la práctica
  *
- * Práctica: 5
- * Objetivo: Implementar una cola estática circular.
+ * Práctica: 6
+ * Objetivo: Implementar una cola de prioridades.
  *
  * Equipo:
     - Humberto Alejandro Ortega Alcocer (2016630495) <hortegaa1500@alumno.ipn.mx>
@@ -19,9 +19,9 @@
 
 // Constantes de operación
 #define MENU_SALIR 4            // Opción para salir del programa.
-#define MENU_INSERTAR 1         // Opción para la operación "insertar"
-#define MENU_ELIMINAR 2         // Opción para la operación "eliminar"
-#define MENU_IMPRIMIR 3         // Opción para la operación "imprimir"
+#define MENU_INSERTAR 1         // Opción para la operación "insertar".
+#define MENU_ELIMINAR 2         // Opción para la operación "eliminar".
+#define MENU_IMPRIMIR 3         // Opción para la operación "imprimir".
 #define BANDERA_COLA_VACIA '\0' // Bandera para cuando la cola está vacía.
 #define TAM_MAX_CADENAS 100     // El tamaño máximo para las cadenas del programa, 100 es un valor razonable.
 
@@ -199,18 +199,22 @@ int precedencia(char *primerCadena, char *segundaCadena)
 char *eliminar(NodoColaPrioridades **nodoInicial)
 {
   // Variables locales.
-  NodoColaPrioridades *nodoTemporal;
-  char *datoTemporal;
+  NodoColaPrioridades *nodoTemporal;                                   // Un nodo temporal para realizar la operación.
+  char *datoTemporal = (char *)malloc(sizeof(char) * TAM_MAX_CADENAS); // Así preservamos el tamaño manteniendo el tipo de dato de retorno (char * vs char[])
 
   // Verificamos que la cola no esté vacía.
   if (*nodoInicial == NULL)
   {
-    return BANDERA_COLA_VACIA;
+    // Colocamos la bandera en la primer posición del arreglo datoTemporal.
+    datoTemporal[0] = BANDERA_COLA_VACIA;
+
+    // Regresamos el arreglo.
+    return datoTemporal;
   }
   else
   {
     // Guardamos la cadena en dato temporal.
-    datoTemporal = (*nodoInicial)->cadena;
+    strcpy(datoTemporal, (*nodoInicial)->cadena);
 
     // Guardamos la dirección de nodoInicial en nodoTemporal.
     nodoTemporal = *nodoInicial;
